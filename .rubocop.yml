@@ -1,0 +1,49 @@
+AllCops:
+  TargetRubyVersion: 2.4.2
+
+MethodLength:
+  Max: 20
+
+BlockLength:
+  Max: 70
+
+  Exclude:
+    - 'Rakefile'
+    - 'rakelib/**/*.rake'
+    - 'spec/**/*.rb'
+
+Metrics/LineLength:
+  Max: 80
+
+Naming/RescuedExceptionsVariableName:
+  PreferredName: exception
+
+Style/GuardClause:
+  Enabled: false
+
+Style/Next:
+  Enabled: false
+
+Style/SymbolArray:
+  Enabled: false
+
+Style/SymbolProc:
+  Enabled: false
+
+Style/WordArray:
+  Enabled: false
+
+Style/YodaCondition:
+  EnforcedStyle: forbid_for_equality_operators_only
+
+Layout/EmptyLinesAroundClassBody:
+  EnforcedStyle: empty_lines_except_namespace
+
+Layout/EmptyLinesAroundModuleBody:
+  EnforcedStyle: empty_lines_except_namespace
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: aligned
+
+Layout/SpaceInsidePercentLiteralDelimiters:
+  Enabled: false
