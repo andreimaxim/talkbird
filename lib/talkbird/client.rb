@@ -39,12 +39,20 @@ module Talkbird
       end
 
       def full_path(path)
-        URI.join(Client.base_url, "/#{Client.version}/", path).to_s
+        Addressable::URI.parse([base_url, Client.version, path].join('/'))
       end
 
-      # Syntactic sugar to simplify interaction with the Singleton class.
       def request(method, path, opts = {})
-        Client.instance.request(method, path, opts)
+        response = Client.instance.request(method, path, opts)
+        status_code = response.code
+
+        if 200 <= status_code && status_code < 400
+          Result::Success.new(response)
+        else
+          Result::Failure.new(response)
+        end
+      rescue StandardError => exception
+        Result::Exception.new(response, exception)
       end
 
     end
