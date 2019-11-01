@@ -1,0 +1,18 @@
+---
+
+# Generic smell configuration
+detectors:
+  # According to a study done by Card, Church, and Agresti (1986) and a study
+  # done by Card and Glass (1990) small routines with 32 or fewer lines of code
+  # were not corelated with lower cost or fault rate.
+  #
+  # Evidence suggested that larger routines (65 lines of code or more) were
+  # cheaper to develop per line of code.
+  # -- Code Complete 2
+  #
+  # Since Ruby is more terse than a lot of languages and because there seems to
+  # be a relationship between error rate and structural complexity, the limit
+  # should probably be slightly lower. However, the default value of 5 is too
+  # low.
+  TooManyStatements:
+    max_statements: 20

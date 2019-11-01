@@ -4,7 +4,8 @@ module Talkbird
   # Class that handles the basic calls to SendBird
   class Client
 
-    VERSION = 3
+    VERSION = 'v3'
+    SCHEME = 'https'
 
     include Singleton
 
@@ -30,29 +31,74 @@ module Talkbird
         end
       end
 
-      def base_url
-        "https://api-#{application_id}.sendbird.com"
+      def host
+        "api-#{application_id}.sendbird.com"
       end
 
-      def version
-        "v#{VERSION}"
-      end
-
-      def full_path(path)
-        Addressable::URI.parse([base_url, Client.version, path].join('/'))
+      def uri(path, params = {})
+        if path.is_a?(HTTP::URI)
+          build_uri_from_existing(path, params)
+        else
+          build_uri_from_partial_path(path, params)
+        end
       end
 
       def request(method, path, opts = {})
-        response = Client.instance.request(method, path, opts)
-        status_code = response.code
+        default_headers = {
+          'Api-Token' => token,
+          'Content-Type' => 'application/json, charset=utf8'
+        }
 
-        if 200 <= status_code && status_code < 400
-          Result::Success.new(response)
-        else
-          Result::Failure.new(response)
-        end
-      rescue StandardError => exception
-        Result::Exception.new(response, exception)
+        req = HTTP::Request.new(
+          verb: method,
+          uri: uri(path, opts[:params]),
+          headers: (opts[:headers] || {}).merge(default_headers)
+        )
+
+        req[:body] = opts[:body] if opts.key?(:body)
+
+        response = Client.instance.request(req, opts)
+        Talkbird::Result.create(response)
+      end
+
+      private
+
+      def build_uri_from_existing(path, params = {})
+        uri = Addressable::URI.parse(path)
+        extra_params = (params || {})
+                         .transform_keys { |key| key.to_s.downcase }
+        opts = {
+          scheme: uri.scheme,
+          host: uri.host,
+          path: uri.path
+        }
+
+        # Remove the token from the existing query as it is most likely invalid
+        # anyway.
+        query = (uri.query_values || {}).reject { |name, _val| name == 'token' }
+
+        opts[:query_values] = if query.empty? && extra_params.empty?
+                                nil
+                              else
+                                query.merge(extra_params)
+                              end
+
+        Addressable::URI.new(opts)
+      end
+
+      def build_uri_from_partial_path(partial_path, params = {})
+        path = [Client::VERSION, partial_path].join('/')
+        opts = {
+          scheme: Client::SCHEME,
+          host: Client.host,
+          path: path
+        }
+
+        # Adding the `query_values` when the `params` is an empty hash
+        # will add a `?` at the end of the URL.
+        opts[:query_values] = params if params && !params.empty?
+
+        Addressable::URI.new(opts)
       end
 
     end
@@ -61,45 +107,17 @@ module Talkbird
       @http = HTTP.use(
         instrumentation: {
           instrumenter: ActiveSupport::Notifications.instrumenter,
-          namespace: 'sendbird'
+          namespace: Talkbird::Instrumentation::Event::NAMESPACE
         }
       )
 
-      register_instrumentation_for_request
-      register_instrumentation_for_response
+      Instrumentation::Event.register_instrumentation_for_request
+      Instrumentation::Event.register_instrumentation_for_response
     end
 
-    def request(method, path, opts = {})
-      default_headers = {
-        'Api-Token' => Client.token,
-        'Content-Type' => 'application/json, charset=utf8'
-      }
-
-      @http.request(
-        method,
-        Client.full_path(path),
-        opts.merge(headers: default_headers)
-      )
-    end
-
-    private
-
-    def register_instrumentation_for_request
-      event_name = Talkbird::Instrumentation::Event::START_EVENT
-
-      ActiveSupport::Notifications.subscribe(event_name) do |*params|
-        data = Talkbird::Instrumentation::Event.new(params)
-        puts data
-      end
-    end
-
-    def register_instrumentation_for_response
-      event_name = Talkbird::Instrumentation::Event::END_EVENT
-
-      ActiveSupport::Notifications.subscribe(event_name) do |*params|
-        data = Talkbird::Instrumentation::Event.new(params)
-        puts data
-      end
+    def request(req, opts = {})
+      options = HTTP::Options.new(opts)
+      @http.perform(req, options)
     end
 
   end

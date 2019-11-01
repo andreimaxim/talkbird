@@ -9,8 +9,10 @@ require 'active_support/notifications'
 require 'talkbird/version'
 require 'talkbird/client'
 
+require 'talkbird/result'
 require 'talkbird/result/basic'
 require 'talkbird/result/success'
+require 'talkbird/result/paginated_success'
 require 'talkbird/result/failure'
 require 'talkbird/result/exception'
 

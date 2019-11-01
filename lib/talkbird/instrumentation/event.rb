@@ -6,10 +6,25 @@ module Talkbird
     # notification.
     class Event
 
+      NAMESPACE = 'sendbird'
       START_EVENT = 'start_request.sendbird'
       END_EVENT = 'request.sendbird'
 
       class << self
+
+        def register_instrumentation_for_request
+          ActiveSupport::Notifications.subscribe(START_EVENT) do |*params|
+            data = Talkbird::Instrumentation::Event.new(params)
+            $stdout.puts data
+          end
+        end
+
+        def register_instrumentation_for_response
+          ActiveSupport::Notifications.subscribe(END_EVENT) do |*params|
+            data = Talkbird::Instrumentation::Event.new(params)
+            $stdout.puts data
+          end
+        end
 
         def debug?
           ENV.key?('SENDBIRD_DEBUG')
