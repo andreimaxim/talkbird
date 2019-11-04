@@ -27,7 +27,6 @@ module Talkbird
         return false if !sender || !receiver
 
         channel = Entity::Channel.find_or_create(sender.id, receiver.id)
-        puts channel.inspect
         channel.update(self)
       end
 

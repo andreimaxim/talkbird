@@ -27,10 +27,17 @@ module Talkbird
           )
 
           if result.is_a?(Result::Success)
-            Channel.new(result.body[:channels].first)
+            Channel.build(result.body[:channels].first)
           else
             false
           end
+        end
+
+        # Build a channel based on the current payload.
+        #
+        # @return [Channel, Boolean]
+        def build(payload)
+          !payload.empty? && Channel.new(payload)
         end
 
         def create(from, to, opts = {})
@@ -66,6 +73,14 @@ module Talkbird
         @data[:channel_url]
       end
 
+      def name
+        @data[:name]
+      end
+
+      def members
+        @data[:members].map { |hsh| Entity::User.new(hsh) }
+      end
+
       def update(message)
         body = {
           user_id: message.sender.id,
@@ -73,17 +88,15 @@ module Talkbird
           message_type: 'MESG',
         }
 
-        result = Client.request(
+        Client.request(
           :post,
           "group_channels/#{id}/messages",
           body: body
         )
+      end
 
-        if result.is_a?(Result::Success)
-          Entity::Message.build(result.body)
-        else
-          false
-        end
+      def to_s
+        "#<Talkbird::Entity::Channel id=#{id}>"
       end
 
     end

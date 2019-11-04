@@ -26,9 +26,9 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'activesupport', '>= 5.0'
-  spec.add_dependency 'multi_json', '~> 1.14'
-  spec.add_dependency 'http', '~> 4.2'
+  spec.add_dependency 'activesupport'
+  spec.add_dependency 'multi_json'
+  spec.add_dependency 'http'
 
   spec.add_development_dependency 'bundler', '~> 1.17'
   spec.add_development_dependency 'pry', '~> 0.12.2'
