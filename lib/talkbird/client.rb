@@ -46,16 +46,15 @@ module Talkbird
       def request(method, path, opts = {})
         default_headers = {
           'Api-Token' => token,
-          'Content-Type' => 'application/json, charset=utf8'
+          'Content-Type' => 'application/json; charset=utf8'
         }
 
         req = HTTP::Request.new(
           verb: method,
           uri: uri(path, opts[:params]),
-          headers: (opts[:headers] || {}).merge(default_headers)
+          headers: (opts[:headers] || {}).merge(default_headers),
+          body: MultiJson.dump(opts[:body])
         )
-
-        req[:body] = opts[:body] if opts.key?(:body)
 
         response = Client.instance.request(req, opts)
         Talkbird::Result.create(response)

@@ -16,3 +16,5 @@ detectors:
   # low.
   TooManyStatements:
     max_statements: 20
+  TooManyMethods:
+    max_methods: 30

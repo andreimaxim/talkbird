@@ -18,6 +18,10 @@ require 'talkbird/result/exception'
 
 require 'talkbird/instrumentation/event'
 
+require 'talkbird/entity/channel'
+require 'talkbird/entity/message'
+require 'talkbird/entity/user'
+
 # Unofficial SendBird API client.
 module Talkbird
 end
