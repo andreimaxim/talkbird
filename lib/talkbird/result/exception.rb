@@ -3,11 +3,16 @@
 module Talkbird
   module Result
     # Class representing a result as an exception.
-    class Exception < Basic
+    class Exception
+
+      attr_reader :body
+      attr_reader :result
+      attr_reader :exception
 
       def initialize(exception, result)
-        @exception = exception
         @result = result
+        @exception = exception
+        @body = { error: exception.message }
       end
 
     end

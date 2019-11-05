@@ -13,6 +13,12 @@ module Talkbird
       class << self
 
         def find(from, to)
+          # The only way to find a conversation with another person is to search
+          # through all the conversations with some rather strict parameters
+          # and pick the best match.
+          #
+          # In this case, the order is based on the latest last message as it
+          # makes more sense to have the
           result = Client.request(
             :get,
             "users/#{from}/my_group_channels",
@@ -26,7 +32,9 @@ module Talkbird
             }
           )
 
-          if result.is_a?(Result::Success)
+          # Since this is the result of a search, the response can be an empty
+          # array, in which case the result should also be false.
+          if result.is_a?(Result::Success) && !result.body[:channels].empty?
             Channel.build(result.body[:channels].first)
           else
             false
@@ -96,7 +104,7 @@ module Talkbird
       end
 
       def to_s
-        "#<Talkbird::Entity::Channel id=#{id}>"
+        "#<Talkbird::Entity::Channel id=#{id} name=#>"
       end
 
     end

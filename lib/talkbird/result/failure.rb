@@ -2,8 +2,11 @@
 
 module Talkbird
   module Result
-    class Failure < Basic
+    # Encapsulates a response from the API which should be considered a failed
+    # request.
+    class Failure
 
+      attr_reader :body
       attr_reader :result
 
       def initialize(result)
