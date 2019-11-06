@@ -151,8 +151,8 @@ module Talkbird
       # @param text [String] The message body
       #
       # @return [Boolean]
-      def message(to, text)
-        Entity::Message.new(self, to, text).deliver
+      def message(to, text, opts = {})
+        Entity::Message.new(self, to, text, opts).deliver
       end
 
       def to_h

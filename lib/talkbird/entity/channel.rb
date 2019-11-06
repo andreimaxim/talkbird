@@ -31,11 +31,12 @@ module Talkbird
               limit: 1
             }
           )
+          channels = result.body[:channels] || []
 
           # Since this is the result of a search, the response can be an empty
           # array, in which case the result should also be false.
-          if result.is_a?(Result::Success) && !result.body[:channels].empty?
-            Channel.build(result.body[:channels].first)
+          if result.is_a?(Result::Success) && !channels.empty?
+            Channel.build(channels.first)
           else
             false
           end
@@ -90,21 +91,15 @@ module Talkbird
       end
 
       def update(message)
-        body = {
-          user_id: message.sender.id,
-          message: message.body,
-          message_type: 'MESG',
-        }
-
         Client.request(
           :post,
           "group_channels/#{id}/messages",
-          body: body
+          body: message.to_h
         )
       end
 
       def to_s
-        "#<Talkbird::Entity::Channel id=#{id} name=#>"
+        "#<Talkbird::Entity::Channel id=#{id} name=#{name} members=#{members}>"
       end
 
     end
